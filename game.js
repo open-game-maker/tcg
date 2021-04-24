@@ -245,7 +245,7 @@
             for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
                 if (state[this.staticValue.DECK][playerIndex].length > 0) {
                     //山札にまだカードがある場合、そこから1枚引く
-                    state[this.staticValue.HAND][playerIndex].push(state[this.staticValue.DECK][0].pop());
+                    state[this.staticValue.HAND][playerIndex].push(state[this.staticValue.DECK][playerIndex].pop());
                 }
                 else {
                     //手札が加えられない場合、敗北プレイヤーに加える
