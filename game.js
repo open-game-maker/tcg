@@ -127,9 +127,10 @@
             for (var selectiIndex = 0; selectiIndex < state[this.staticValue.SELECT_CARD][playerIndex].length; selectiIndex++) {
                 if (state[this.staticValue.SELECT_CARD][playerIndex][selectiIndex] == this.staticValue.CARD_ID_GUARD) {
                     var found = state[this.staticValue.PLAYERS_STATE][playerIndex].find(function(element) {
-                        return element[thisStaticValue.PLAYER_STATE_INDEX_PLAYER_STATE_ID] == thisStaticValue.PLAYER_STATE_GUARD;
+                        return element[thisStaticValue.PLAYER_STATE_INDEX_PLAYER_STATE_ID] == thisStaticValue.PLAYER_STATE_NO_GUARD;
                     });
                     if (found == null) {
+                        //ガードできない状態が付与されている場合は付与しないガード状態を付与しない
                         state[this.staticValue.PLAYERS_STATE][playerIndex].push([this.staticValue.PLAYER_STATE_GUARD, 0, 1]);
                     }
                 }
@@ -224,12 +225,23 @@
             state[this.staticValue.SELECT_CARD][playerIndex] = [];
         }
 
+        //HPが0以下のプレイヤーが存在するか
+        var isExistHp0Player = false
         //敗北したプレイヤーのIDを入れる配列
         var losePlayer = [];
+
+        //HPが一定以下のプレイヤーを敗北とする
+        for (var i = 0; i < state[this.staticValue.LIFE].length; i++) {
+            if (state[this.staticValue.LIFE][i] <= 0) {
+                isExistHp0Player = true
+                losePlayer.push(ogm.deepCopy(i));
+            }
+        }
+
         if (isAddCard) {
             //ゲームの始めにカードを加えた場合、山札をシャッフルする
-            ogm.shuffle(random, state[this.staticValue.DECK][0]);
-            ogm.shuffle(random, state[this.staticValue.DECK][1]);
+            state[this.staticValue.DECK][0] = ogm.shuffle(random, state[this.staticValue.DECK][0]);
+            state[this.staticValue.DECK][1] = ogm.shuffle(random, state[this.staticValue.DECK][1]);
 
             //ゲームの始めに手札に加えるカードの枚数
             var NUMBER_OF_CARDS_IN_HAND = 3;
@@ -248,16 +260,11 @@
                     state[this.staticValue.HAND][playerIndex].push(state[this.staticValue.DECK][playerIndex].pop());
                 }
                 else {
-                    //手札が加えられない場合、敗北プレイヤーに加える
-                    losePlayer.push(playerIndex);
+                    if (!isExistHp0Player) {
+                        //手札が加えられない場合、敗北プレイヤーに加える（すでにHP0のプレイヤーがいるならば、そちらを優先的に処理する）
+                        losePlayer.push(playerIndex);
+                    } 
                 }
-            }
-        }
-
-        //HPが一定以下のプレイヤーを敗北とする
-        for (var i = 0; i < state[this.staticValue.LIFE].length; i++) {
-            if (state[this.staticValue.LIFE][i] <= 0) {
-                losePlayer.push(ogm.deepCopy(i));
             }
         }
 
