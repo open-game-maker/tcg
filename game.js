@@ -1,3 +1,4 @@
+//GAME_V3
 ({
     //先攻後攻のないTCG
     
@@ -75,7 +76,7 @@
             //プレイヤーIDを送る（シグナルIDの-1番目をプレイヤーIDを送る用とする）
             signal[index].push([ogm.PLAYER_ID_SIGNAL_ID, index]);
             //プレイヤー数を送る（シグナルIDの-2番目をプレイヤー数を送る用とする）
-            signal[index].push([ogm.PLSYER_NUMBER_SIGNAL_ID, ogm.numberOfPlayer]);
+            signal[index].push([ogm.PLAYER_NUMBER_SIGNAL_ID, ogm.numberOfPlayer]);
         }
 
         //処理結果を返す
@@ -303,7 +304,7 @@
             //プレイヤーIDを送る（シグナルIDの-1番目をプレイヤーIDを送る用とする）
             signal[index].push([ogm.PLAYER_ID_SIGNAL_ID, index]);
             //プレイヤー数を送る（シグナルIDの-2番目をプレイヤー数を送る用とする）
-            signal[index].push([ogm.PLSYER_NUMBER_SIGNAL_ID, ogm.numberOfPlayer]);
+            signal[index].push([ogm.PLAYER_NUMBER_SIGNAL_ID, ogm.numberOfPlayer]);
             //選択されていたカードをプレイヤーに送信する
             signal[index].push(this.staticValue.SIGNAL_ID_SELECT, selectCards);
         }
