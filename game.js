@@ -38,12 +38,14 @@
     numberOfPlayer: [2],
 
     /**
-     * ゲームの初期化処理
+     * ゲームの初期化処理(game#initialize)
      * @param {*} ogm 汎用関数
      * @param {*} random 乱数生成
      * @param {*} rule ルール
+     * @param {*} mode ターン数、プレイヤー数等のゲームの状態の中でプログラム上から変更できない値
+     * @returns 次のゲームの状態
      */
-    initialize: function(ogm, random, rule) {
+    initialize: function(ogm, random, rule, mode) {
         //ゲームの状態
         //0: 各プレイヤのライフ, 1: デッキのカード, 2: 手札のカード, 3: 選択されたカード, 4: プレイヤーの属する状態変化
         var state = [[30, 30], [[],[]], [[],[]], [[],[]], [[],[]]];
@@ -51,15 +53,15 @@
         //選択の情報をプレイヤーに送信
         var selections = ogm.newArray(2);
         //デッキの作成のための選択
-        for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
+        for (var playerIndex = 0; playerIndex < mode.numberOfPlayer; playerIndex++) {
             for (var i = 0; i < 10; i++) {
                 selections[playerIndex].push(ogm.createPlayerSelect(this.staticValue.SELECTION_INDEX_ADD_CARD, this.staticValue.SELECTION_INDEX_ADD_CARD, null));
             } 
         }
 
         //ゲーム状態をプレイヤーに共有する
-        var shares = ogm.newArray(ogm.numberOfPlayer);
-        for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
+        var shares = ogm.newArray(mode.numberOfPlayer);
+        for (var playerIndex = 0; playerIndex < mode.numberOfPlayer; playerIndex++) {
             //各プレイヤーのHP
             shares[playerIndex].push([ogm.STATE, this.staticValue.LIFE]);
             //自分の手札　
@@ -71,12 +73,12 @@
         }
 
         //ゲームの情報をプレイヤーに送信する
-        var signal = ogm.newArray(ogm.numberOfPlayer);
-        for (var index = 0; index < ogm.numberOfPlayer; index++) {
+        var signal = ogm.newArray(mode.numberOfPlayer);
+        for (var index = 0; index < mode.numberOfPlayer; index++) {
             //プレイヤーIDを送る（シグナルIDの-1番目をプレイヤーIDを送る用とする）
             signal[index].push([ogm.PLAYER_ID_SIGNAL_ID, index]);
             //プレイヤー数を送る（シグナルIDの-2番目をプレイヤー数を送る用とする）
-            signal[index].push([ogm.PLAYER_NUMBER_SIGNAL_ID, ogm.numberOfPlayer]);
+            signal[index].push([ogm.PLAYER_NUMBER_SIGNAL_ID, mode.numberOfPlayer]);
         }
 
         //処理結果を返す
@@ -90,20 +92,22 @@
         );
     },
     /**
-     * ゲームの次状態の生成
-     * @param {*} ogm 汎用関数
-     * @param {*} random 乱数生成
-     * @param {*} state ゲームの状態
+     * ゲームの次状態の生成(game#next)
+     * @param {*} ogm initializeと同じ
+     * @param {*} random initializeと同じ
+     * @param {*} state 前のゲームの状態
      * @param {*} selectList プレイヤーの選択
+     * @param {*} mode initializeと同じ
+     * @returns 次のゲームの状態
      */
-    next: function(ogm, random, state, selectList) {
+    next: function(ogm, random, state, selectList, mode) {
         //staticValueをfunction内で使用するための変数
         var thisStaticValue = this.staticValue;
 
         var isAddCard = false;
 
         //全プレイヤーの選択を処理
-        for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
+        for (var playerIndex = 0; playerIndex < mode.numberOfPlayer; playerIndex++) {
             for (var selectIndex = 0; selectIndex < selectList[playerIndex].length; selectIndex++) {
                 var playerSelect = selectList[playerIndex][selectIndex].playersSelection;
                 if (selectList[playerIndex][selectIndex].selection.constraintsKey == this.staticValue.SELECTION_INDEX_ADD_CARD) {
@@ -124,7 +128,7 @@
         }
         
         //ガードなどの実行
-        for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
+        for (var playerIndex = 0; playerIndex < mode.numberOfPlayer; playerIndex++) {
             for (var selectiIndex = 0; selectiIndex < state[this.staticValue.SELECT_CARD][playerIndex].length; selectiIndex++) {
                 if (state[this.staticValue.SELECT_CARD][playerIndex][selectiIndex] == this.staticValue.CARD_ID_GUARD) {
                     var found = state[this.staticValue.PLAYERS_STATE][playerIndex].find(function(element) {
@@ -139,7 +143,7 @@
         }
 
         //攻撃などの実行
-        for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
+        for (var playerIndex = 0; playerIndex < mode.numberOfPlayer; playerIndex++) {
             for (var selectiIndex = 0; selectiIndex < state[this.staticValue.SELECT_CARD][playerIndex].length; selectiIndex++) {
                 if (state[this.staticValue.SELECT_CARD][playerIndex][selectiIndex] == this.staticValue.CARD_ID_ATTACK) {
                     //攻撃を使用している場合
@@ -175,7 +179,7 @@
         }
 
         //プレイヤーの状態のターン経過処理
-        for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
+        for (var playerIndex = 0; playerIndex < mode.numberOfPlayer; playerIndex++) {
             //継続ターンを1減らす
             for (var playerStateIndex = 0; playerStateIndex < state[this.staticValue.PLAYERS_STATE][playerIndex].length; playerStateIndex++) {
                 if (state[this.staticValue.PLAYERS_STATE][playerIndex][playerStateIndex][this.staticValue.PLAYER_STATE_INDEX_TURN] > 0) {
@@ -190,7 +194,7 @@
         }
 
         //チャージなどの実行
-        for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
+        for (var playerIndex = 0; playerIndex < mode.numberOfPlayer; playerIndex++) {
             for (var selectiIndex = 0; selectiIndex < state[this.staticValue.SELECT_CARD][playerIndex].length; selectiIndex++) {
                 if (state[this.staticValue.SELECT_CARD][playerIndex][selectiIndex] == this.staticValue.CARD_ID_GUARD) {
                     //次回ガードを使用できない状態を付与
@@ -217,12 +221,12 @@
         var selectCards = [];
 
         //選択されていたカードをプレイヤーに送信する
-        for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
+        for (var playerIndex = 0; playerIndex < mode.numberOfPlayer; playerIndex++) {
             selectCards.push(ogm.deepCopy(state[this.staticValue.SELECT_CARD][playerIndex]));
         }
 
         //選択を初期化
-        for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
+        for (var playerIndex = 0; playerIndex < mode.numberOfPlayer; playerIndex++) {
             state[this.staticValue.SELECT_CARD][playerIndex] = [];
         }
 
@@ -247,7 +251,7 @@
             //ゲームの始めに手札に加えるカードの枚数
             var NUMBER_OF_CARDS_IN_HAND = 3;
             //山札から手札にカードを加える
-            for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
+            for (var playerIndex = 0; playerIndex < mode.numberOfPlayer; playerIndex++) {
                 for (var i = 0; i < NUMBER_OF_CARDS_IN_HAND; i++) {
                     state[this.staticValue.HAND][playerIndex].push(state[this.staticValue.DECK][playerIndex].pop());
                 }
@@ -255,7 +259,7 @@
         }
         else {
             //互いに1枚カードを引く
-            for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
+            for (var playerIndex = 0; playerIndex < mode.numberOfPlayer; playerIndex++) {
                 if (state[this.staticValue.DECK][playerIndex].length > 0) {
                     //山札にまだカードがある場合、そこから1枚引く
                     state[this.staticValue.HAND][playerIndex].push(state[this.staticValue.DECK][playerIndex].pop());
@@ -280,14 +284,14 @@
         }
 
         //選択の情報をプレイヤーに送信
-        var selections = ogm.newArray(ogm.numberOfPlayer);
-        for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
+        var selections = ogm.newArray(mode.numberOfPlayer);
+        for (var playerIndex = 0; playerIndex < mode.numberOfPlayer; playerIndex++) {
             selections[playerIndex].push(ogm.createPlayerSelect(this.staticValue.SELECTION_INDEX_SELECT_CARD, this.staticValue.SELECTION_INDEX_SELECT_CARD, null));
         }
         
         //ゲーム状態をプレイヤーに共有する
-        var shares = ogm.newArray(ogm.numberOfPlayer);
-        for (var playerIndex = 0; playerIndex < ogm.numberOfPlayer; playerIndex++) {
+        var shares = ogm.newArray(mode.numberOfPlayer);
+        for (var playerIndex = 0; playerIndex < mode.numberOfPlayer; playerIndex++) {
             //各プレイヤーのHP
             shares[playerIndex].push([ogm.STATE, this.staticValue.LIFE]);
             //自分の手札　
@@ -299,12 +303,12 @@
         }
 
         //ゲームの情報をプレイヤーに送信する
-        var signal = ogm.newArray(ogm.numberOfPlayer);
-        for (var index = 0; index < ogm.numberOfPlayer; index++) {
+        var signal = ogm.newArray(mode.numberOfPlayer);
+        for (var index = 0; index < mode.numberOfPlayer; index++) {
             //プレイヤーIDを送る（シグナルIDの-1番目をプレイヤーIDを送る用とする）
             signal[index].push([ogm.PLAYER_ID_SIGNAL_ID, index]);
             //プレイヤー数を送る（シグナルIDの-2番目をプレイヤー数を送る用とする）
-            signal[index].push([ogm.PLAYER_NUMBER_SIGNAL_ID, ogm.numberOfPlayer]);
+            signal[index].push([ogm.PLAYER_NUMBER_SIGNAL_ID, mode.numberOfPlayer]);
             //選択されていたカードをプレイヤーに送信する
             signal[index].push(this.staticValue.SIGNAL_ID_SELECT, selectCards);
         }
