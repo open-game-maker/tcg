@@ -77,7 +77,7 @@
 
         if (this.selectionIndex < this.numberOfAddCard) {
             //デッキにカードを加える選択権がある場合、デッキにカードを加える処理の描画用のビューを設定
-            var card = ui.gameScript.selectionConstraintsList[0].createAll(ui.cgp, completeShareState, null)
+            var card = ui.gameScript.selectionConstraintsList[0].createAll(ui, completeShareState, null)
             for (var count = 0; count < card.length; count++) {
                 ui.register(idCount, 5 + count * 35, 40, 30, 30);
                 ui.addFillRect(idCount, "lightgray");
@@ -102,14 +102,16 @@
             var MARGINE = 5
 
             //手札の描画用のビューを設定
-            for (var count = 0; count < this.shareStateHand.length; count++) {
-                ui.register(idCount, 5 + count * 35, CARD_HEIGHT + MARGINE, 30, 30);
-                ui.addFillRect(idCount, "lightgray");
-                ui.addFillText(idCount, "black", " " + ui.deepCopy(this.shareStateHand[count]) + " ", null);
-                ui.setOnClickListener(idCount, ui.deepCopy(count), function(obj){
-                    ui.sendSlectionChat(0, null, obj, null)
-                })
-                idCount++;
+            if (this.shareStateHand != null) {
+                for (var count = 0; count < this.shareStateHand.length; count++) {
+                    ui.register(idCount, 5 + count * 35, CARD_HEIGHT + MARGINE, 30, 30);
+                    ui.addFillRect(idCount, "lightgray");
+                    ui.addFillText(idCount, "black", " " + ui.deepCopy(this.shareStateHand[count]) + " ", null);
+                    ui.setOnClickListener(idCount, ui.deepCopy(count), function(obj){
+                        ui.sendSlectionChat(0, null, obj, null)
+                    })
+                    idCount++;
+                }
             }
 
             //HPの描画用のビューを設定
@@ -123,22 +125,24 @@
             idCount++;
 
             //状態変化の描画用のビューを設定
-            for (var i = 0; i < this.shareStatePlayerState.length; i++) {
-                for (var i2 = 0; i2 < this.shareStatePlayerState[i].length; i2++) {
-                    ui.register(idCount, 5 + 155 * i + (i2 * (STATE_CARD_SIZE + MARGINE)), STATE_CARD_SIZE, STATE_CARD_SIZE, STATE_CARD_SIZE);
-                    ui.addFillRect(idCount, "lightgray");
-                    ui.addFillText(idCount, "black", " " + this.shareStatePlayerState[i][i2][0] + " ", null);
-                    idCount++;
-
-                    ui.register(idCount, 5 + 155 * i + (i2 * (STATE_CARD_SIZE + MARGINE)), STATE_CARD_SIZE, SUB_STATE_CARD_SIZE, SUB_STATE_CARD_SIZE);
-                    ui.addFillRect(idCount, "lightgray");
-                    ui.addFillText(idCount, "black", " " + ((this.shareStatePlayerState[i][i2][1] == -1) ? "∞" : this.shareStatePlayerState[i][i2][1]) + " ", null);
-                    idCount++;
-
-                    ui.register(idCount, 5 + 155 * i + STATE_CARD_SIZE - SUB_STATE_CARD_SIZE + (i2 * (STATE_CARD_SIZE + MARGINE)), STATE_CARD_SIZE, SUB_STATE_CARD_SIZE, SUB_STATE_CARD_SIZE);
-                    ui.addFillRect(idCount, "lightgray");
-                    ui.addFillText(idCount, "black", " " + this.shareStatePlayerState[i][i2][2] + " ", null);
-                    idCount++;
+            if (this.shareStatePlayerState != null) {
+                for (var i = 0; i < this.shareStatePlayerState.length; i++) {
+                    for (var i2 = 0; i2 < this.shareStatePlayerState[i].length; i2++) {
+                        ui.register(idCount, 5 + 155 * i + (i2 * (STATE_CARD_SIZE + MARGINE)), STATE_CARD_SIZE, STATE_CARD_SIZE, STATE_CARD_SIZE);
+                        ui.addFillRect(idCount, "lightgray");
+                        ui.addFillText(idCount, "black", " " + this.shareStatePlayerState[i][i2][0] + " ", null);
+                        idCount++;
+    
+                        ui.register(idCount, 5 + 155 * i + (i2 * (STATE_CARD_SIZE + MARGINE)), STATE_CARD_SIZE, SUB_STATE_CARD_SIZE, SUB_STATE_CARD_SIZE);
+                        ui.addFillRect(idCount, "lightgray");
+                        ui.addFillText(idCount, "black", " " + ((this.shareStatePlayerState[i][i2][1] == -1) ? "∞" : this.shareStatePlayerState[i][i2][1]) + " ", null);
+                        idCount++;
+    
+                        ui.register(idCount, 5 + 155 * i + STATE_CARD_SIZE - SUB_STATE_CARD_SIZE + (i2 * (STATE_CARD_SIZE + MARGINE)), STATE_CARD_SIZE, SUB_STATE_CARD_SIZE, SUB_STATE_CARD_SIZE);
+                        ui.addFillRect(idCount, "lightgray");
+                        ui.addFillText(idCount, "black", " " + this.shareStatePlayerState[i][i2][2] + " ", null);
+                        idCount++;
+                    }
                 }
             }
         }
